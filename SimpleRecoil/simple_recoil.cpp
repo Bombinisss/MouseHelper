@@ -230,10 +230,10 @@ void DestroyDevice() noexcept
 
 void CreateImGui() noexcept
 {
-	//IMGUI_CHECKVERSION();
+	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ::ImGui::GetIO();
-	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable | io.ConfigViewportsNoAutoMerge;
+	io.ConfigFlags = ImGuiConfigFlags_ViewportsEnable | io.ConfigViewportsNoAutoMerge;
 
 	io.IniFilename = NULL;
 
@@ -306,15 +306,7 @@ void Render()
 	ImGui::SetNextWindowPos({ 1920, 0 });
 	ImGui::SetNextWindowSize({ 137, 52 });
 	ImGui::StyleColorsDark();
-	ImGui::Begin(
-		"Steam",
-		&isRunning,
-		ImGuiWindowFlags_NoScrollbar |
-		ImGuiWindowFlags_NoSavedSettings |
-		ImGuiWindowFlags_NoCollapse
-		| ImGuiWindowFlags_NoTitleBar
-		| ImGuiWindowFlags_AlwaysAutoResize
-	);
+	ImGui::Begin("Steam",&isRunning,ImGuiWindowFlags_NoScrollbar |ImGuiWindowFlags_NoSavedSettings |ImGuiWindowFlags_NoCollapse|ImGuiWindowFlags_NoTitleBar| ImGuiWindowFlags_AlwaysAutoResize);
 	ImGui::PushItemWidth(100);
 	ImGui::SliderInt("###", &settings.weapon_idx, 0, 2);
 	
@@ -335,13 +327,7 @@ void Render()
 	{
 		ImGui::SetNextWindowSize({ 200, 200 });
 		ImGui::SetNextWindowPos({2060,0});
-		ImGui::Begin(
-			"Menu",
-			&mWindow,
-			ImGuiWindowFlags_NoSavedSettings |
-			ImGuiWindowFlags_NoTitleBar
-			| ImGuiWindowFlags_AlwaysAutoResize
-		);
+		ImGui::Begin("Menu",&mWindow,ImGuiWindowFlags_NoSavedSettings |ImGuiWindowFlags_NoTitleBar| ImGuiWindowFlags_AlwaysAutoResize);
 		ImGui::Text("MENU");
 		ImGui::Text("Hotkeys: F3 to exit");
 		ImGui::Text("Hotkeys: F2 for norecoil");
@@ -505,11 +491,7 @@ void input_thread() {
 	}
 }
 
-int __stdcall wWinMain(
-	HINSTANCE instance,
-	HINSTANCE previousInstance,
-	PWSTR arguments,
-	int commandShow) {
+int __stdcall WinMain(HINSTANCE instance,HINSTANCE previousInstance,PSTR arguments,int commandShow) {
 	CreateHWindow("Steam");
 	CreateDevice();
 	CreateImGui();
@@ -519,8 +501,7 @@ int __stdcall wWinMain(
 	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)recoil_thread, NULL, NULL, NULL); //creating 'recoil_thread' for the main recoil function
 	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)trigger_thread, NULL, NULL, NULL);
 
-	while (isRunning)
-	{
+	while (isRunning){
 		BeginRender();
 		
 		Render();
