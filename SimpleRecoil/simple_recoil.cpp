@@ -23,7 +23,7 @@ keyboard k;
 bool mWindow = false;
 bool operating = false;
 bool working = false;
-bool trigON = false;
+bool glazbot = false;
 bool audio = false;
 COLORREF pixel;
 COLORREF pixel2;
@@ -312,8 +312,11 @@ void Render()
 	
 	ImGui::SameLine(110);ImGui::Checkbox("##", &operating);
 	//ImGui::Text("Mode %d", id);
-	if(working)ImGui::Text("Trigger ON");
-	else ImGui::Text("Trigger OFF");
+	if(working)ImGui::Text("T ON");
+	else ImGui::Text("T OFF");
+	ImGui::SameLine(50);
+	if (glazbot)ImGui::Text("G ON");
+	else ImGui::Text("G OFF");
 	ImGui::SameLine(90);
 	if (ImGui::SmallButton("Menu")) {
 		if (mWindow == false) {
@@ -332,6 +335,8 @@ void Render()
 		ImGui::Text("Hotkeys: F3 to exit");
 		ImGui::Text("Hotkeys: F2 for norecoil");
 		ImGui::Text("Hotkeys: F1 for triggerbot");
+		ImGui::Text("Hotkeys: F5 for glazbot");
+
 		ImGui::Checkbox("Audio", &audio);
 
 		ImGui::End();
@@ -426,7 +431,7 @@ void trigger_thread() {
 	
 	for (;;) {
 		
-		while (working) {
+		while (working || glazbot) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(20));
 			pixel2 =GetPixel(hdcMain, 960, 535);
 			red2 = GetRValue(pixel2);
@@ -436,6 +441,10 @@ void trigger_thread() {
 				m.click(300);
 				Beep(50, 300);
 				working = false;
+			}
+			if (abs(red2 - green2) <= 13 && abs(green2 - blue2) <= 170 && abs(green2 - blue2) >= 50 && glazbot) {
+				m.click(40);
+				Beep(500, 300);
 			}
 		}
 		counnter++;
@@ -471,10 +480,15 @@ void input_thread() {
 			Beep(50, 400);
 			ExitProcess(3);
 		}
-		if (GetAsyncKeyState(VK_F1) & 0x8000 || trigON) {
+		if (GetAsyncKeyState(VK_F5) & 0x8000) {
+			if (glazbot == true) { glazbot = false; Beep(50, 200);
+			}
+			else if (glazbot == false) { glazbot = true; Beep(500, 200);
+			}
+		}
+		if (GetAsyncKeyState(VK_F1) & 0x8000) {
 			if (working == false) {
 				working = true;
-				trigON = false;
 				pixel = GetPixel(hdcMain, 960, 535);
 				red = GetRValue(pixel);
 				green = GetGValue(pixel);
