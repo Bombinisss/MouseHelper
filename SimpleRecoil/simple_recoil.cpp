@@ -151,7 +151,7 @@ void CreateHWindow(const char* windowName) noexcept
 		"class001",
 		windowName,
 		WS_POPUP,
-		0,
+		1920,
 		0,
 		WIDTH,
 		HEIGHT,
@@ -303,8 +303,10 @@ void Render()
 	style.WindowRounding = 0.0f;
 	style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 	::SetWindowPos(window, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-	ImGui::SetNextWindowPos({ 1920, 0 });
-	ImGui::SetNextWindowSize({ 137, 52 });
+	const ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(true ? viewport->WorkPos : viewport->Pos);
+	//ImGui::SetNextWindowSize(true ? viewport->WorkSize : viewport->Size);
+	ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
 	ImGui::StyleColorsDark();
 	ImGui::Begin("Steam",&isRunning,ImGuiWindowFlags_NoScrollbar |ImGuiWindowFlags_NoSavedSettings |ImGuiWindowFlags_NoCollapse|ImGuiWindowFlags_NoTitleBar| ImGuiWindowFlags_AlwaysAutoResize);
 	ImGui::PushItemWidth(100);
