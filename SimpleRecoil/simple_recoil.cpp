@@ -129,7 +129,7 @@ LRESULT WindowProcess(
 	return DefWindowProc(window, message, wideParameter, longParameter);
 }
 
-void CreateHWindow(LPCWSTR windowName) noexcept
+void CreateHWindow(const char* windowName) noexcept
 {
 	windowClass.cbSize = sizeof(WNDCLASSEX);
 	windowClass.style = CS_CLASSDC;
@@ -141,14 +141,14 @@ void CreateHWindow(LPCWSTR windowName) noexcept
 	windowClass.hCursor = 0;
 	windowClass.hbrBackground = 0;
 	windowClass.lpszMenuName = 0;
-	windowClass.lpszClassName = LPCWSTR("class001");
+	windowClass.lpszClassName = "class001";
 	windowClass.hIconSm = 0;
 
 	RegisterClassEx(&windowClass);
 
 	window = CreateWindowEx(
 		WS_EX_TOPMOST | WS_EX_LAYERED,
-		LPCWSTR("class001"),
+		"class001",
 		windowName,
 		WS_POPUP,
 		0,
@@ -506,7 +506,7 @@ void input_thread() {
 }
 
 int __stdcall WinMain(HINSTANCE instance,HINSTANCE previousInstance,PSTR arguments,int commandShow) {
-	CreateHWindow(LPCWSTR("Steam"));
+	CreateHWindow("Steam");
 	CreateDevice();
 	CreateImGui();
 	SetPriorityClass(GetCurrentProcess(), 0x00000020); //setting process priority
