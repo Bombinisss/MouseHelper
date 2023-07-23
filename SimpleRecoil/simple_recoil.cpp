@@ -261,6 +261,7 @@ void BeginRender() noexcept
 		if (message.message == WM_QUIT)
 		{
 			isRunning = !isRunning;
+			ExitProcess(3);
 			return;
 		}
 	}
@@ -297,6 +298,23 @@ void EndRender() noexcept
 	ImGui::RenderPlatformWindowsDefault();
 }
 
+enum weapon_list {
+	weapon1,
+	weapon2,
+	weapon3,
+	weapon4
+};
+
+struct pattern {
+	std::vector<short> x, y;
+	int fire_rate;
+	float multiplyer;
+	float limit1;
+	float limit2;
+};
+
+std::vector<pattern> weapon;
+
 void Render()
 {
 	ImGuiStyle& style = ImGui::GetStyle();
@@ -310,7 +328,7 @@ void Render()
 	ImGui::StyleColorsDark();
 	ImGui::Begin("Steam",&isRunning,ImGuiWindowFlags_NoScrollbar |ImGuiWindowFlags_NoSavedSettings |ImGuiWindowFlags_NoCollapse|ImGuiWindowFlags_NoTitleBar| ImGuiWindowFlags_AlwaysAutoResize);
 	ImGui::PushItemWidth(100);
-	ImGui::SliderInt("###", &settings.weapon_idx, 0, 2);
+	ImGui::SliderInt("###", &settings.weapon_idx, 0, 3);
 	
 	ImGui::SameLine(110);ImGui::Checkbox("##", &operating);
 	//ImGui::Text("Mode %d", id);
@@ -330,7 +348,7 @@ void Render()
 	}
 	if (mWindow)
 	{
-		ImGui::SetNextWindowSize({ 200, 200 });
+		//ImGui::SetNextWindowSize({ 200, 200 });
 		ImGui::SetNextWindowPos({2060,0});
 		ImGui::Begin("Menu",&mWindow,ImGuiWindowFlags_NoSavedSettings |ImGuiWindowFlags_NoTitleBar| ImGuiWindowFlags_AlwaysAutoResize);
 		ImGui::Text("MENU");
@@ -341,27 +359,16 @@ void Render()
 
 		ImGui::Checkbox("Audio", &audio);
 
+		ImGui::SliderInt("firerate", &weapon[settings.weapon_idx].fire_rate, 0, 200);
+		ImGui::SliderFloat("multiplyer", &weapon[settings.weapon_idx].multiplyer,0.0f,3.0f,"%f",ImGuiSliderFlags_None);
+		ImGui::SliderFloat("limit1", &weapon[settings.weapon_idx].limit1,0.0f,3.0f,"%f",ImGuiSliderFlags_None);
+		ImGui::SliderFloat("limit2", &weapon[settings.weapon_idx].limit2,0.0f,3.0f,"%f",ImGuiSliderFlags_None);
+
 		ImGui::End();
 	}
 
 	ImGui::End();
 }
-
-enum weapon_list {
-	weapon1,
-	weapon2,
-	weapon3
-};
-
-struct pattern {
-	std::vector<short> x, y;
-	int fire_rate;
-	double multiplyer;
-	double limit1;
-	double limit2;
-};
-
-std::vector<pattern> weapon;
 
 void initialize_patterns(std::vector<pattern>& vector, int weapon_count) { 
 	for (int i = 0; i < weapon_count; i++)
@@ -370,23 +377,30 @@ void initialize_patterns(std::vector<pattern>& vector, int weapon_count) {
 	vector[weapon1].x = { 4, -3, 3, -3, 2 }; //mp7 vector ar33
 	vector[weapon1].y = { 16, 14, 14, 13, 15 };
 	vector[weapon1].fire_rate = 70;
-	vector[weapon1].multiplyer = 1.25; 
-	vector[weapon1].limit1= 0.9;
-	vector[weapon1].limit2=0.999;
+	vector[weapon1].multiplyer = 1.25f; 
+	vector[weapon1].limit1= 0.9f;
+	vector[weapon1].limit2=0.999f;
 
 	vector[weapon2].x = { 2, -1, 2, -3, 2 }; //t-5 smg11
 	vector[weapon2].y = { 18, 16, 14, 16, 15 };
 	vector[weapon2].fire_rate = 70;
-	vector[weapon2].multiplyer = 1.4;
-	vector[weapon2].limit1 = 1.4;
-	vector[weapon2].limit2 = 1.999;
+	vector[weapon2].multiplyer = 1.4f;
+	vector[weapon2].limit1 = 1.4f;
+	vector[weapon2].limit2 = 1.999f;
 
 	vector[weapon3].x = { -4, -3, -3, -3, -4 }; //t89
 	vector[weapon3].y = { 18, 16, 18, 16, 16 };
 	vector[weapon3].fire_rate = 70;
-	vector[weapon3].multiplyer = 1.5;
-	vector[weapon3].limit1 = 1.4;
-	vector[weapon3].limit2 = 1.999;
+	vector[weapon3].multiplyer = 1.5f;
+	vector[weapon3].limit1 = 1.4f;
+	vector[weapon3].limit2 = 1.999f;
+
+	vector[weapon4].x = { 2, -2, 2, -2, 2, -2}; //battlebit t2000
+	vector[weapon4].y = { 18, 16, 14, 16, 15 };
+	vector[weapon4].fire_rate = 58;
+	vector[weapon4].multiplyer = 1.715f;
+	vector[weapon4].limit1 = 1.90f;
+	vector[weapon4].limit2 = 1.909f;
 }
 
 //int main() {
@@ -512,7 +526,7 @@ int __stdcall WinMain(HINSTANCE instance,HINSTANCE previousInstance,PSTR argumen
 	CreateDevice();
 	CreateImGui();
 	SetPriorityClass(GetCurrentProcess(), 0x00000020); //setting process priority
-	initialize_patterns(weapon, 3); //replace 'weapon_count' (3) with how many weapons you are adding, this is to improve memory usage
+	initialize_patterns(weapon, 4); //replace 'weapon_count' (3) with how many weapons you are adding, this is to improve memory usage
 	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)input_thread, NULL, NULL, NULL); //creating 'input_thread' thread for getting key states
 	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)recoil_thread, NULL, NULL, NULL); //creating 'recoil_thread' for the main recoil function
 	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)trigger_thread, NULL, NULL, NULL);
