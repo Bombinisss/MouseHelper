@@ -6,5 +6,5 @@ Working recoilhelper for r6s
   - Mouse movements
   - Gui
   - Triggerbot
-  - ColorTriggerbot
+  - ColorTriggerbot (Yellow Only)
   - Sound indicators
