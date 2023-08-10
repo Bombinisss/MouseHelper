@@ -51,6 +51,12 @@
     <ClCompile Include="imgui\imgui_impl_win32.cpp">
       <Filter>source_files\imgui</Filter>
     </ClCompile>
+    <ClCompile Include="imgui\implot.cpp">
+      <Filter>source_files</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\implot_items.cpp">
+      <Filter>source_files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mouse.h">
@@ -87,6 +93,12 @@
       <Filter>header_files</Filter>
     </ClInclude>
     <ClInclude Include="imgui\imgui_impl_win32.h">
+      <Filter>header_files</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\implot.h">
+      <Filter>header_files</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\implot_internal.h">
       <Filter>header_files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -14,6 +14,7 @@
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_impl_dx9.h"
 #include "../imgui/imgui_impl_win32.h"
+#include "../imgui/implot.h"
 
 void recoil_thread();
 void input_thread();
@@ -40,7 +41,7 @@ long long int counnter=0;
 
 // constant window size
 constexpr int WIDTH = 500;//137
-constexpr int HEIGHT = 500;//35
+constexpr int HEIGHT = 800;//35
 
 // when this changes, exit threads
 // and close menu :)
@@ -232,6 +233,7 @@ void CreateImGui() noexcept
 {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
+	ImPlot::CreateContext();
 	ImGuiIO& io = ::ImGui::GetIO();
 	io.ConfigFlags = ImGuiConfigFlags_ViewportsEnable | io.ConfigViewportsNoAutoMerge;
 
@@ -247,6 +249,7 @@ void DestroyImGui() noexcept
 {
 	ImGui_ImplDX9_Shutdown();
 	ImGui_ImplWin32_Shutdown();
+	ImPlot::DestroyContext();
 	ImGui::DestroyContext();
 }
 
@@ -314,6 +317,8 @@ struct pattern {
 };
 
 std::vector<pattern> weapon;
+static short xs1[100], ys1[100];
+int simNumber = 0;
 
 void Render()
 {
@@ -364,6 +369,14 @@ void Render()
 		ImGui::SliderFloat("limit1", &weapon[settings.weapon_idx].limit1,0.0f,3.0f,"%f",ImGuiSliderFlags_None);
 		ImGui::SliderFloat("limit2", &weapon[settings.weapon_idx].limit2,0.0f,3.0f,"%f",ImGuiSliderFlags_None);
 
+		ImPlot::SetNextAxisLimits(ImAxis_X1,-250,250);
+		ImPlot::SetNextAxisLimits(ImAxis_Y1,-500,0);
+		if (ImPlot::BeginPlot("Scatter Plot")) {
+			ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 0.5f, ImPlot::GetColormapColor(1), IMPLOT_AUTO, ImPlot::GetColormapColor(1));
+			ImPlot::PlotScatter("Recoil", xs1, ys1, 100);
+			ImPlot::EndPlot();
+		}
+
 		ImGui::End();
 	}
 
@@ -397,7 +410,7 @@ void initialize_patterns(std::vector<pattern>& vector, int weapon_count) {
 
 	vector[weapon4].x = { 2, -2, 2, -2, 2, -2}; //battlebit t2000
 	vector[weapon4].y = { 18, 16, 14, 16, 15 };
-	vector[weapon4].fire_rate = 58;
+	vector[weapon4].fire_rate = 55;
 	vector[weapon4].multiplyer = 1.715f;
 	vector[weapon4].limit1 = 1.90f;
 	vector[weapon4].limit2 = 1.909f;
@@ -427,6 +440,65 @@ void recoil_thread() {
 					}
 
 					m.move(weapon[settings.weapon_idx].x[counter] % 4, timecounter + weapon[settings.weapon_idx].y[counter] % 4);
+					std::this_thread::sleep_for(std::chrono::milliseconds(weapon[settings.weapon_idx].fire_rate % 4));
+					counter++;
+					if (counter == 4)counter = 0;
+				}
+				if (timecounter < weapon[settings.weapon_idx].limit1) {
+					timecounter = timecounter * weapon[settings.weapon_idx].multiplyer;
+				}
+				else if (timecounter < weapon[settings.weapon_idx].limit2) {
+					timecounter = weapon[settings.weapon_idx].limit2;
+				}
+			}
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+	}
+}
+
+void sim_thread() {
+
+	for (;;) {
+		int counter = 0;
+		double timecounter = 0.5;
+			while (true) {
+				if(simNumber == 100) {
+					simNumber=1;
+					for(int i =0; i<100;i++) {
+						ys1[i]= 0.0f;
+						xs1[i]= 0.0f;
+					}
+				}
+				ys1[0]= 0.0f;
+				xs1[0]= 0.0f;
+
+				if (counter < weapon[settings.weapon_idx].x.size()) {
+					for (int i = 0; i != 5; i++) {
+
+						ys1[simNumber] = ys1[simNumber-1] - (timecounter + weapon[settings.weapon_idx].y[counter] / 4);
+						xs1[simNumber] = xs1[simNumber-1] + (weapon[settings.weapon_idx].x[counter] / 4);
+
+						simNumber++;
+						if(simNumber == 100) {
+							simNumber=0;
+							for(int i =0; i<100;i++) {
+								ys1[i]= 0.0f;
+								xs1[i]= 0.0f;
+							}
+						}		
+						std::this_thread::sleep_for(std::chrono::milliseconds(weapon[settings.weapon_idx].fire_rate / 4));
+					}
+
+					ys1[simNumber] = ys1[simNumber-1] - (timecounter + weapon[settings.weapon_idx].y[counter] % 4);
+					xs1[simNumber] = xs1[simNumber-1] + (weapon[settings.weapon_idx].x[counter] % 4);
+
+					simNumber++;
+					if(simNumber == 100) {
+						simNumber=0;
+						for(int i =0; i<100;i++) {
+							ys1[i]= 0.0f;
+							xs1[i]= 0.0f;
+						}
+					}	
 					std::this_thread::sleep_for(std::chrono::milliseconds(weapon[settings.weapon_idx].fire_rate % 4));
 					counter++;
 					if (counter == 4)counter = 0;
@@ -530,6 +602,7 @@ int __stdcall WinMain(HINSTANCE instance,HINSTANCE previousInstance,PSTR argumen
 	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)input_thread, NULL, NULL, NULL); //creating 'input_thread' thread for getting key states
 	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)recoil_thread, NULL, NULL, NULL); //creating 'recoil_thread' for the main recoil function
 	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)trigger_thread, NULL, NULL, NULL);
+	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)sim_thread, NULL, NULL, NULL);
 
 	while (isRunning){
 		BeginRender();
