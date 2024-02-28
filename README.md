@@ -1,10 +1,10 @@
-#This is a recoilhelper  
+# SimpleRecoil
+
+In this source you will find
+Working recoilhelper for r6s 
 
   - Mouse movements
   - Gui
   - Triggerbot
   - ColorTriggerbot
   - Sound indicators
-  - Graphs
-  - Multiple profiles
-  - Best for second monitor
